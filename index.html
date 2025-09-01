@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Acortador de Enlaces</title>
+</head>
+<body>
+  <h1>Acortador de Enlaces</h1>
+  <form id="shorten-form">
+    <label for="url">URL a acortar:</label>
+    <input type="url" id="url" name="url" required />
+    <button type="submit">Acortar</button>
+  </form>
+  <p id="result"></p>
+  <script>
+    const form = document.getElementById('shorten-form');
+    const result = document.getElementById('result');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      result.textContent = 'Procesando...';
+      const url = document.getElementById('url').value;
+      try {
+        const response = await fetch('/shorten', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url })
+        });
+        if (!response.ok) {
+          throw new Error('Error en la petición');
+        }
+        const data = await response.json();
+        const short = data.short_url || data.shortUrl;
+        if (short) {
+          const link = document.createElement('a');
+          link.href = short;
+          link.textContent = short;
+          link.target = '_blank';
+          result.innerHTML = 'Enlace corto: ';
+          result.appendChild(link);
+        } else {
+          result.textContent = 'Respuesta inválida de la API';
+        }
+      } catch (err) {
+        result.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
